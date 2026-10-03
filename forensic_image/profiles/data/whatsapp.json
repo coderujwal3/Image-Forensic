@@ -1,0 +1,14 @@
+{
+  "profile_id": "whatsapp_image",
+  "display_name": "WhatsApp Image Delivery Profile",
+  "category": "messaging",
+  "description": "Characteristics observed on WhatsApp standard compressed image uploads",
+  "format": "JPEG",
+  "max_dimension": 1600,
+  "chroma_subsampling": "4:2:0",
+  "expected_exif_present": false,
+  "expected_gps_present": false,
+  "typical_quality_range": [70, 82],
+  "is_progressive_preferred": false,
+  "notes": "Strips all EXIF/GPS, resizes images to max 1600px edge, encodes with baseline 4:2:0 JPEG"
+}

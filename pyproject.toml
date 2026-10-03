@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forensic-image"
+version = "0.1.0"
+description = "Professional-grade digital image forensics, evidence preservation, and provenance analysis library"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "DFIR Research Team", email = "research@forensic-image.dev"}
+]
+keywords = [
+    "digital-forensics",
+    "image-forensics",
+    "dfir",
+    "exif",
+    "metadata",
+    "jpeg-forensics",
+    "provenance",
+    "steganography-detection",
+    "perceptual-hashing",
+    "cybersecurity"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "Pillow>=10.0.0",
+    "pydantic>=2.0.0",
+    "click>=8.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "defusedxml>=0.7.1",
+    "rich>=13.0.0",
+    "jinja2>=3.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov"
+]
+
+[project.scripts]
+forensic-image = "forensic_image.cli.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["forensic_image*"]
+
+[tool.setuptools.package-data]
+"forensic_image.profiles.data" = ["*.json"]
+"forensic_image.reporting" = ["templates/*.html", "templates/*.css"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]

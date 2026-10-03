@@ -1,0 +1,14 @@
+{
+  "profile_id": "instagram_feed",
+  "display_name": "Instagram Feed Upload Profile",
+  "category": "social_media",
+  "description": "Characteristics observed on Instagram feed feed uploads",
+  "format": "JPEG",
+  "max_dimension": 1440,
+  "chroma_subsampling": "4:2:0",
+  "expected_exif_present": false,
+  "expected_gps_present": false,
+  "typical_quality_range": [72, 85],
+  "is_progressive_preferred": true,
+  "notes": "Strips camera metadata, enforces max dimension bounding, often encodes progressive JPEG"
+}

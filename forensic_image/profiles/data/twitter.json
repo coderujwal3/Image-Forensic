@@ -1,0 +1,14 @@
+{
+  "profile_id": "twitter_x_photo",
+  "display_name": "Twitter / X Image Delivery Profile",
+  "category": "social_media",
+  "description": "Standard CDN re-encoded image delivery profile from X/Twitter",
+  "format": "JPEG",
+  "max_dimension": 2048,
+  "chroma_subsampling": "4:2:0",
+  "expected_exif_present": false,
+  "expected_gps_present": false,
+  "typical_quality_range": [78, 88],
+  "is_progressive_preferred": true,
+  "notes": "Strips EXIF and GPS, bounds to 2048 or 4096px, re-compresses with MozJPEG/libjpeg-turbo"
+}

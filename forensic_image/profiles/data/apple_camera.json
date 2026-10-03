@@ -1,0 +1,14 @@
+{
+  "profile_id": "apple_iphone_native",
+  "display_name": "Apple iPhone Native Camera Profile",
+  "category": "camera",
+  "description": "Original unstripped JPEG export from Apple iOS Camera pipeline",
+  "format": "JPEG",
+  "max_dimension": 8064,
+  "chroma_subsampling": "4:2:0",
+  "expected_exif_present": true,
+  "expected_gps_present": true,
+  "typical_quality_range": [88, 97],
+  "is_progressive_preferred": false,
+  "notes": "Retains rich Apple MakerNotes, Display P3 ICC profile, 4032x3024 or 5712x4284 dimensions"
+}

@@ -1,0 +1,13 @@
+{
+  "profile_id": "adobe_photoshop_export",
+  "display_name": "Adobe Photoshop Export Profile",
+  "category": "editor",
+  "description": "Standard Photoshop Save / Export for Screens encoding profile",
+  "format": "JPEG",
+  "chroma_subsampling": "4:4:4",
+  "expected_exif_present": true,
+  "expected_gps_present": false,
+  "typical_quality_range": [80, 100],
+  "is_progressive_preferred": false,
+  "notes": "Includes Photoshop IRB / APP13 blocks, Adobe APP14 marker, xmpMM history events"
+}

@@ -1,0 +1,19 @@
+{
+  "profile_id": "ios_screenshot_png",
+  "display_name": "Apple iOS Native Screenshot Profile",
+  "category": "screenshot",
+  "description": "Standard native screen grab profile on modern iOS devices",
+  "format": "PNG",
+  "allowed_dimensions": [
+    [1170, 2532],
+    [1179, 2556],
+    [1284, 2778],
+    [1290, 2796],
+    [1125, 2436],
+    [828, 1792],
+    [750, 1334]
+  ],
+  "expected_exif_present": false,
+  "expected_gps_present": false,
+  "notes": "Saved as PNG, no camera EXIF, exact iPhone screen native resolutions, Display P3 or sRGB ICC"
+}
