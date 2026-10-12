@@ -52,7 +52,7 @@ The library **never** claims that an observed quantization table "proves" an ima
 ## Installation
 
 ```bash
-pip install forensic-image
+python main.py <img_path>
 ```
 
 For development and research:

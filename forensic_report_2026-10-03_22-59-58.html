@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forensic Analysis: mine_image.png</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-heading: #58a6ff;
+            --text-muted: #8b949e;
+            --accent-blue: #388bfd;
+            --accent-green: #238636;
+            --accent-red: #da3633;
+            --accent-yellow: #d29922;
+            --accent-purple: #8957e5;
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #f6f8fa;
+                --bg-secondary: #ffffff;
+                --bg-tertiary: #f0f2f5;
+                --border-color: #d0d7de;
+                --text-primary: #24292f;
+                --text-heading: #0969da;
+                --text-muted: #57606a;
+                --accent-blue: #0969da;
+                --accent-green: #1a7f37;
+                --accent-red: #cf222e;
+                --accent-yellow: #9a6700;
+                --accent-purple: #8250df;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 24px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 { color: var(--text-heading); font-size: 24px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+        .header-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
+        .meta-item { font-size: 13px; }
+        .meta-label { color: var(--text-muted); text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+        .meta-val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; word-break: break-all; }
+        
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .metric-val { font-size: 20px; font-weight: 700; color: var(--text-heading); margin-top: 4px; }
+        .metric-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .card-title { font-size: 18px; font-weight: 600; color: var(--text-heading); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+        th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background: var(--bg-tertiary); color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        tr:hover td { background: var(--bg-tertiary); }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-observed { background: rgba(35, 134, 54, 0.2); color: #3fb950; border: 1px solid rgba(63, 185, 80, 0.4); }
+        .status-derived { background: rgba(56, 139, 253, 0.2); color: #58a6ff; border: 1px solid rgba(88, 166, 255, 0.4); }
+        .status-inferred { background: rgba(137, 87, 229, 0.2); color: #bc8cff; border: 1px solid rgba(188, 140, 255, 0.4); }
+        .status-not_available { background: rgba(139, 148, 158, 0.2); color: #8b949e; border: 1px solid rgba(139, 148, 158, 0.4); }
+
+        .sev-critical { background: #da3633; color: white; }
+        .sev-high { background: rgba(218, 54, 51, 0.2); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.4); }
+        .sev-medium { background: rgba(210, 153, 34, 0.2); color: #e3b341; border: 1px solid rgba(227, 179, 65, 0.4); }
+        .sev-low { background: rgba(56, 139, 253, 0.15); color: #79c0ff; border: 1px solid rgba(121, 192, 255, 0.3); }
+        .sev-info { background: rgba(139, 148, 158, 0.15); color: #8b949e; border: 1px solid rgba(139, 148, 158, 0.3); }
+
+        .timeline-step {
+            position: relative;
+            padding-left: 32px;
+            padding-bottom: 24px;
+            border-left: 2px solid var(--accent-blue);
+            margin-left: 12px;
+        }
+        .timeline-step:last-child { border-left: 2px solid transparent; padding-bottom: 0; }
+        .timeline-bullet {
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            border: 3px solid var(--bg-secondary);
+        }
+        .timeline-title { font-weight: 700; font-size: 14px; color: var(--text-heading); }
+        .timeline-desc { font-size: 13px; color: var(--text-primary); margin-top: 4px; }
+        .timeline-ev { font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: 2px; }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            max-width: 320px;
+            margin-top: 8px;
+            background: var(--border-color);
+            padding: 2px;
+            border-radius: 4px;
+        }
+        .matrix-cell {
+            background: var(--bg-tertiary);
+            text-align: center;
+            font-size: 11px;
+            font-family: ui-monospace, monospace;
+            padding: 4px 2px;
+        }
+        .thumb-preview {
+            max-width: 200px;
+            max-height: 150px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 40px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🔍 Forensic Image Intelligence Report</h1>
+        <div class="header-meta">
+            <div class="meta-item">
+                <div class="meta-label">Evidence Identifier</div>
+                <div class="meta-val">EVID-3ACBDE952482D4A0</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Target File</div>
+                <div class="meta-val">mine_image.png</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Primary SHA-256 Digest</div>
+                <div class="meta-val">3acbde952482d4a043543627c7c52337d03b6200c858669f8ff921e6345732a1</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Acquisition & Tool</div>
+                <div class="meta-val">forensic-image v0.1.0 (Python 3.14.7)</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Format</div>
+            <div class="metric-val">PNG</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Dimensions</div>
+            <div class="metric-val">1254 × 1254</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Resolution</div>
+            <div class="metric-val">1.57 MP</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">File Size</div>
+            <div class="metric-val">1.74 MB</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Findings Count</div>
+            <div class="metric-val">4</div>
+        </div>
+    </div>
+
+    <!-- Forensic Findings -->
+    <div class="card">
+        <div class="card-title">⚖️ Forensic Findings & Observations</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Strict epistemic separation: <strong>OBSERVED</strong> (direct binary artifact) vs <strong>DERIVED</strong> (mathematically calculated) vs <strong>INFERRED</strong> (scientific hypothesis with stated limitations).
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Status</th>
+                    <th style="width: 90px;">Severity</th>
+                    <th>Finding Title & Evidence Basis</th>
+                    <th>Limitations / Alternative Hypotheses</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td><span class="badge status-derived">DERIVED</span></td>
+                <td><span class="badge sev-info">INFO</span></td>
+                <td>
+                    <strong>Cryptographic evidence identifier established</strong>
+                    <div style="font-size: 12px; margin-top: 2px;">Evidence authenticated with SHA-256 digest: 3acbde952482d4a043543627c7c52337d03b6200c858669f8ff921e6345732a1</div>
+                    <ul style="margin: 4px 0 0 16px; font-size: 12px; color: var(--text-muted);"><li>SHA-256: 3acbde952482d4a043543627c7c52337d03b6200c858669f8ff921e6345732a1</li><li>MD5: 6209eea498af0be374fa64d08ebd1474</li><li>Byte size: 1825583</li></ul>
+                </td>
+                <td><span style='color: var(--text-muted); font-size: 11px;'>None stated</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="badge status-not_available">NOT_AVAILABLE</span></td>
+                <td><span class="badge sev-info">INFO</span></td>
+                <td>
+                    <strong>EXIF metadata absent</strong>
+                    <div style="font-size: 12px; margin-top: 2px;">No standard EXIF metadata payload exists in the examined image container.</div>
+                    
+                </td>
+                <td><ul style="margin: 4px 0 0 16px; font-size: 12px; color: var(--accent-yellow);"><li>Stripped EXIF metadata cannot be reconstructed from pixel payload.</li></ul></td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="badge status-inferred">INFERRED</span></td>
+                <td><span class="badge sev-info">INFO</span></td>
+                <td>
+                    <strong>Screenshot indicators possible</strong> <small style='color: var(--text-muted);'>(45% conf)</small>
+                    <div style="font-size: 12px; margin-top: 2px;">Structural, dimensional, and metadata characteristics are consistent with screen capture (Unknown display device).</div>
+                    <ul style="margin: 4px 0 0 16px; font-size: 12px; color: var(--text-muted);"><li>Total absence of camera sensor capture metadata (Make, Model, Lens, ISO, Exposure)</li><li>Stored in lossless PNG container (standard OS screen capture format)</li></ul>
+                </td>
+                <td><ul style="margin: 4px 0 0 16px; font-size: 12px; color: var(--accent-yellow);"><li>An image cropped to screen dimensions or rendered by graphics software can match screen resolutions.</li><li>Stripping camera EXIF from a regular photograph will mimic metadata absence.</li><li>Display resolution matching alone does not prove screenshot provenance.</li></ul></td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="badge status-inferred">INFERRED</span></td>
+                <td><span class="badge sev-info">INFO</span></td>
+                <td>
+                    <strong>Forensic provenance timeline hypothesis generated</strong> <small style='color: var(--text-muted);'>(75% conf)</small>
+                    <div style="font-size: 12px; margin-top: 2px;">Generated 2-stage processing sequence hypothesis: Screen Capture -&gt; Current State (Supplied File).</div>
+                    <ul style="margin: 4px 0 0 16px; font-size: 12px; color: var(--text-muted);"><li>Stage count: 2</li><li>Hypothesized origin: SCREEN_CAPTURE</li></ul>
+                </td>
+                <td><ul style="margin: 4px 0 0 16px; font-size: 12px; color: var(--accent-yellow);"><li>This timeline is an inductive hypothesis constructed from surviving artifacts.</li><li>Intermediate states that left no surviving artifacts cannot be inferred.</li><li>Stripped metadata cannot be verified or recovered from pixel bytes alone.</li></ul></td>
+            </tr>
+            
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Hypothesized Processing Sequence -->
+    
+        <div class="card">
+            <div class="card-title">⏳ Hypothesized Processing Sequence</div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                NOTE: This sequence is an evidence-based <strong>FORENSIC HYPOTHESIS</strong>, not established historical fact.
+            </p>
+            <div style="margin-top: 12px;">
+                
+            <div class="timeline-step">
+                <div class="timeline-bullet"></div>
+                <div class="timeline-title">ORIGIN: Screen Capture</div>
+                <div class="timeline-desc">Evidence created via screenshot capture on a display device consistent with None.</div>
+                <ul class="timeline-ev"><li>Total absence of camera sensor capture metadata (Make, Model, Lens, ISO, Exposure)</li><li>Stored in lossless PNG container (standard OS screen capture format)</li></ul>
+            </div>
+            
+            <div class="timeline-step">
+                <div class="timeline-bullet"></div>
+                <div class="timeline-title">EVIDENCE: Current State (Supplied File)</div>
+                <div class="timeline-desc">Digital evidence acquired as PNG (1825583 bytes).</div>
+                <ul class="timeline-ev"><li>SHA-256: 3acbde952482d4a043543627c7c52337d03b6200c858669f8ff921e6345732a1</li></ul>
+            </div>
+            
+            </div>
+        </div>
+        
+
+    <!-- Metadata Section -->
+    <div class="card">
+        <div class="card-title">📋 Surviving Metadata Breakdown</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+            <div>
+                <h3 style="font-size: 14px; margin-bottom: 8px;">EXIF Header</h3>
+                <p style='font-size: 12px; color: var(--text-muted);'>EXIF metadata absent.</p>
+            </div>
+            <div>
+                <h3 style="font-size: 14px; margin-bottom: 8px;">Geolocation (GPS)</h3>
+                <p style='font-size: 12px; color: var(--text-muted);'>GPS metadata stripped / absent.</p>
+                
+                <h3 style="font-size: 14px; margin: 16px 0 8px 0;">Embedded Thumbnail</h3>
+                <p style="font-size: 12px; color: var(--text-muted);">No embedded thumbnail located.</p>
+                
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- JPEG Forensics & Quantization -->
+    
+
+    <!-- Reference Profiles Consistency -->
+    
+        <div class="card">
+            <div class="card-title">🎯 Platform Reference Profile Consistency</div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                Measures structural consistency against experimentally measured platform profiles. Does NOT constitute attribution.
+            </p>
+            <table>
+                <thead>
+                    <tr><th>Profile</th><th>Category</th><th>Consistency</th><th>Interpretation</th></tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td><strong>WhatsApp Image Delivery Profile</strong></td>
+                <td><span class="badge" style="background: rgba(56, 139, 253, 0.2); color: var(--accent-blue);">messaging</span></td>
+                <td><strong>66%</strong></td>
+                <td style="font-size: 12px;">Observed characteristics are 67% consistent with reference profile &#x27;WhatsApp Image Delivery Profile&#x27;.</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Apple iOS Native Screenshot Profile</strong></td>
+                <td><span class="badge" style="background: rgba(56, 139, 253, 0.2); color: var(--accent-blue);">screenshot</span></td>
+                <td><strong>66%</strong></td>
+                <td style="font-size: 12px;">Observed characteristics are 67% consistent with reference profile &#x27;Apple iOS Native Screenshot Profile&#x27;.</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Twitter / X Image Delivery Profile</strong></td>
+                <td><span class="badge" style="background: rgba(56, 139, 253, 0.2); color: var(--accent-blue);">social_media</span></td>
+                <td><strong>50%</strong></td>
+                <td style="font-size: 12px;">Observed characteristics are 50% consistent with reference profile &#x27;Twitter / X Image Delivery Profile&#x27;.</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Instagram Feed Upload Profile</strong></td>
+                <td><span class="badge" style="background: rgba(56, 139, 253, 0.2); color: var(--accent-blue);">social_media</span></td>
+                <td><strong>50%</strong></td>
+                <td style="font-size: 12px;">Observed characteristics are 50% consistent with reference profile &#x27;Instagram Feed Upload Profile&#x27;.</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Adobe Photoshop Export Profile</strong></td>
+                <td><span class="badge" style="background: rgba(56, 139, 253, 0.2); color: var(--accent-blue);">editor</span></td>
+                <td><strong>40%</strong></td>
+                <td style="font-size: 12px;">Observed characteristics are 40% consistent with reference profile &#x27;Adobe Photoshop Export Profile&#x27;.</td>
+            </tr>
+            
+                </tbody>
+            </table>
+        </div>
+        
+
+    <!-- Container Segments / Chunks -->
+    
+        <div class="card">
+            <div class="card-title">🧱 Container Segments & Binary Layout</div>
+            <table>
+                <thead>
+                    <tr><th>Segment / Marker</th><th>Code</th><th>Offset</th><th>Length (bytes)</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td><strong>SIGNATURE</strong></td>
+                <td>-</td>
+                <td>0</td>
+                <td>8</td>
+                <td style="font-size: 12px; color: var(--text-muted);">PNG 8-byte file signature</td>
+            </tr>
+            
+            <tr>
+                <td><strong>IHDR</strong></td>
+                <td>-</td>
+                <td>8</td>
+                <td>25</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>caBX</strong></td>
+                <td>-</td>
+                <td>33</td>
+                <td>23666</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>23699</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>89247</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>154795</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>220343</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>285891</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>351439</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>416987</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>482535</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>548083</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>613631</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>679179</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>744727</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>810275</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>875823</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>941371</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1006919</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1072467</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1138015</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1203563</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1269111</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1334659</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1400207</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1465755</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1531303</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1596851</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1662399</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+            <tr>
+                <td><strong>IDAT</strong></td>
+                <td>-</td>
+                <td>1727947</td>
+                <td>65548</td>
+                <td style="font-size: 12px; color: var(--text-muted);"></td>
+            </tr>
+            
+                </tbody>
+            </table>
+        </div>
+        
+
+    <!-- Evidence Integrity & Custody -->
+    <div class="card">
+        <div class="card-title">🛡️ Evidence Integrity & Chain of Custody</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hash Algorithm</th>
+                    <th>Digest</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>SHA-256</td><td class="meta-val">3acbde952482d4a043543627c7c52337d03b6200c858669f8ff921e6345732a1</td></tr>
+                <tr><td>MD5</td><td class="meta-val">6209eea498af0be374fa64d08ebd1474</td></tr>
+                <tr><td>SHA-1</td><td class="meta-val">47031cb92bed88dcc7719011c32d5f3ef2a30e13</td></tr>
+                <tr><td>SHA-512</td><td class="meta-val">c2fcdf9484d61232dc782eaee86aa3fba0b27ae3f5dbcf5e0f3b2e22eff07a07b49a95b3e3379e1dfcb2ee13c851dc2b6b321b54bca0e90b1a0d68588ba125bd</td></tr>
+                <tr><td>Perceptual pHash (DCT)</td><td class="meta-val">ee4cf133b18e26c2</td></tr>
+                <tr><td>Perceptual dHash (Diff)</td><td class="meta-val">0f2371f19725210f</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p>Generated by <strong>forensic-image</strong> digital image forensics framework.</p>
+        <p style="margin-top: 4px; font-size: 11px;">Reproducible forensic analysis. Evidence bytes were not modified during examination.</p>
+    </footer>
+</div>
+</body>
+</html>
