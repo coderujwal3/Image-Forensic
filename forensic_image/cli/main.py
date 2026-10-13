@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 import click
+import shutil
 from rich.console import Console
 
 from forensic_image.core.evidence import ImageEvidence
@@ -19,8 +20,8 @@ from forensic_image.version import TOOL_NAME, __version__
 
 console = Console()
 
-
-@click.group()
+terminal_size = shutil.get_terminal_size(fallback=(80, 24))
+@click.group(context_settings={"help_option_names": ["-h", "--help"], "terminal_width": terminal_size.columns, "max_content_width": terminal_size.columns})
 @click.version_option(version=__version__, prog_name=TOOL_NAME)
 def cli() -> None:
     """Professional-grade digital image forensics and evidence intelligence framework."""

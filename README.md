@@ -51,8 +51,37 @@ The library **never** claims that an observed quantization table "proves" an ima
 
 ## Installation
 
+### Debian-family Linux
+
+On a release whose APT repositories provide the Python dependencies at the
+versions listed in `debian/control` (including Pydantic 2), build a local
+Debian package from the source checkout:
+
 ```bash
-python main.py <img_path>
+sudo apt install build-essential debhelper dh-sequence-python3 \
+  pybuild-plugin-pyproject python3-all python3-setuptools
+dpkg-buildpackage --build=binary --no-sign
+sudo apt install ../forensic-image_0.1.0-1_all.deb
+```
+
+APT installs the command and its Debian-managed Python dependencies. The
+package does not run `pip` as root. The command is then available as:
+
+```bash
+forensic-image --help
+forensic-image analyze evidence.jpg
+forensic-image metadata evidence.jpg
+forensic-image report evidence.jpg --format html --output report.html
+```
+
+The package is currently built for local installation from source; installing
+it with `apt install forensic-image` by package name requires publishing it in
+an APT repository.
+
+### Python package
+
+```bash
+python -m pip install forensic-image
 ```
 
 For development and research:

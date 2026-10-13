@@ -27,7 +27,6 @@ The `forensic-image` library adheres to the following explicit boundaries:
 * Synthetic or generative images that lack camera metadata and match standard screen/web dimensions are reported as having `indeterminate origin` or consistent with synthetic/screen characteristics.
 
 ## 2. Defensive Security Model
-
 Every input image processed by `forensic-image` is treated as **potentially hostile**.
 
 The library mitigates common attack vectors:

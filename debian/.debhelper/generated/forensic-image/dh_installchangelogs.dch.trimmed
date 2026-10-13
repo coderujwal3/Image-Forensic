@@ -1,0 +1,5 @@
+forensic-image (0.1.0-1) unstable; urgency=low
+
+  * Initial Debian package for the forensic-image CLI and Python library.
+
+ -- DFIR Research Team <research@forensic-image.dev>  Mon, 12 Oct 2026 14:50:00 +0530

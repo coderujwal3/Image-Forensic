@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "forensic-image"
-version = "0.1.0"
+version = "0.1.1"
 description = "Professional-grade digital image forensics, evidence preservation, and provenance analysis library"
 readme = "README.md"
 requires-python = ">=3.10"

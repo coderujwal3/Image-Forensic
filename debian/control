@@ -1,0 +1,31 @@
+Source: forensic-image
+Section: utils
+Priority: optional
+Maintainer: DFIR Research Team <research@forensic-image.dev>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-sequence-python3,
+ pybuild-plugin-pyproject,
+ python3-all,
+ python3-setuptools
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/dfir/forensic-image
+
+Package: forensic-image
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+ python3-click (>= 8.0),
+ python3-defusedxml (>= 0.7.1),
+ python3-jinja2 (>= 3.0),
+ python3-numpy (>= 1.24),
+ python3-pil (>= 10.0),
+ python3-pydantic (>= 2.0),
+ python3-rich (>= 13.0),
+ python3-scipy (>= 1.10)
+Description: forensic analysis toolkit for digital images
+ forensic-image provides a command-line interface and Python library for
+ evidence preservation, image metadata extraction, structural analysis,
+ cryptographic hashing, and forensic reporting.
